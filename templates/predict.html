@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predecir Segmento - Segmentación Inteligente</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        /* Ajustes específicos para posicionar contenido debajo del navbar */
+        body {
+            padding-top: 60px; /* Altura del navbar fijo */
+        }
+        
+        .navbar {
+            min-height: 60px;
+        }
+        
+        .main-content {
+            margin-top: 0;
+            padding-top: 0;
+        }
+        
+        /* Asegurar que el contenido no quede oculto detrás del navbar */
+        .container {
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chart-pie me-2"></i>
+                Segmentación Inteligente
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/predict">Predecir</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analysis">Análisis</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content - Comienza justo debajo del navbar -->
+    <div class="main-content">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <!-- Header Compacto -->
+                    <div class="page-header text-center mb-4">
+                        <h1 class="page-title predict-title">
+                            <i class="fas fa-magic"></i>
+                            Predecir Segmento de Cliente
+                        </h1>
+                        <p class="page-subtitle">
+                            Clasificación inteligente usando machine learning
+                        </p>
+                    </div>
+
+                    <!-- Main Prediction Card -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-magic me-2"></i>
+                                Formulario de Predicción
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            {% if show_result %}
+                                {% if prediction %}
+                                    <!-- Prediction Result -->
+                                    <div class="prediction-result p-5 mb-4 text-center">
+                                        <div class="success-checkmark mb-3">
+                                            <div class="check-icon">
+                                                <span class="icon-line line-tip"></span>
+                                                <span class="icon-line line-long"></span>
+                                                <div class="icon-circle"></div>
+                                                <div class="icon-fix"></div>
+                                            </div>
+                                        </div>
+                                        <h2 class="fw-bold mb-3">¡Predicción Completada!</h2>
+                                        <h4 class="mb-4">El cliente pertenece al segmento:</h4>
+                                        <div class="display-4 fw-bold text-warning mb-4">{{ prediction }}</div>
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-8">
+                                                <div class="alert alert-info">
+                                                    <i class="fas fa-lightbulb me-2"></i>
+                                                    <strong>Insight:</strong> Este segmento representa 
+                                                    {{ "%.1f"|format(segment_info.percentage) }}% de tu base de clientes
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Segment Information -->
+                                    <div class="segment-info p-4 mb-4">
+                                        <h5 class="fw-bold mb-3">
+                                            <i class="fas fa-chart-bar me-2"></i>
+                                            Características del Segmento
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p>
+                                                    <strong>👥 Tamaño del Segmento:</strong><br>
+                                                    {{ segment_info.size }} clientes ({{ "%.1f"|format(segment_info.percentage) }}%)
+                                                </p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>
+                                                    <strong>🎂 Edad Promedio:</strong><br>
+                                                    {{ "%.1f"|format(segment_info.avg_age) }} años
+                                                </p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>
+                                                    <strong>💰 Ingreso Promedio:</strong><br>
+                                                    ${{ "%.1f"|format(segment_info.avg_income) }}k
+                                                </p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>
+                                                    <strong>🛍️ Gasto Promedio:</strong><br>
+                                                    {{ "%.1f"|format(segment_info.avg_spending) }} puntos
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Marketing Recommendations -->
+                                    <div class="alert alert-info">
+                                        <h6 class="fw-bold mb-3">
+                                            <i class="fas fa-bullseye me-2"></i>
+                                            Recomendaciones de Marketing
+                                        </h6>
+                                        {% if "Premium" in prediction %}
+                                            <p class="mb-0">
+                                                <strong>🎯 Estrategia Premium:</strong> Ofrecer productos de alta gama, 
+                                                atención personalizada VIP, programas de fidelización exclusivos y 
+                                                servicios premium con valor agregado.
+                                            </p>
+                                        {% elif "Económicos" in prediction %}
+                                            <p class="mb-0">
+                                                <strong>💰 Estrategia Económica:</strong> Enfocarse en precios competitivos, 
+                                                promociones frecuentes, planes de pago flexibles y comunicación 
+                                                centrada en el valor por dinero.
+                                            </p>
+                                        {% elif "Jóvenes" in prediction %}
+                                            <p class="mb-0">
+                                                <strong>🚀 Estrategia Jóvenes:</strong> Utilizar marketing digital intensivo, 
+                                                redes sociales, productos innovadores, apps móviles y comunicación 
+                                                moderna y dinámica.
+                                            </p>
+                                        {% elif "Senior" in prediction %}
+                                            <p class="mb-0">
+                                                <strong>👵 Estrategia Senior:</strong> Enfocarse en confiabilidad, 
+                                                servicio al cliente presencial, facilidad de uso, atención 
+                                                personalizada y tradición.
+                                            </p>
+                                        {% else %}
+                                            <p class="mb-0">
+                                                <strong>📊 Estrategia Personalizada:</strong> Desarrollar estrategias 
+                                                específicas basadas en el análisis detallado de las características 
+                                                únicas de este segmento.
+                                            </p>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="text-center mt-4">
+                                        <div class="d-grid gap-2 d-md-flex justify-content-center">
+                                            <a href="/predict" class="btn btn-primary btn-lg me-md-3">
+                                                <i class="fas fa-plus me-2"></i>Nueva Predicción
+                                            </a>
+                                            <a href="/analysis" class="btn btn-success btn-lg">
+                                                <i class="fas fa-chart-bar me-2"></i>Ver Análisis Completo
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                {% elif error %}
+                                    <!-- Error Display -->
+                                    <div class="alert alert-danger">
+                                        <h5 class="fw-bold">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Error en la Predicción
+                                        </h5>
+                                        <p class="mb-0 mt-2">{{ error }}</p>
+                                    </div>
+                                    <div class="text-center mt-4">
+                                        <a href="/predict" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-arrow-left me-2"></i>Intentar Nuevamente
+                                        </a>
+                                    </div>
+                                {% endif %}
+
+                            {% else %}
+                                <!-- Prediction Form -->
+                                <form method="POST" id="predictionForm">
+                                    <div class="row g-4">
+                                        {% for feature in feature_names %}
+                                        <div class="col-md-6">
+                                            <label for="{{ feature }}" class="form-label fw-bold">
+                                                <i class="fas fa-tag me-2"></i>
+                                                {{ feature.replace('_', ' ').title() }}
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   id="{{ feature }}" 
+                                                   name="{{ feature }}" 
+                                                   step="any"
+                                                   required
+                                                   placeholder="Ingrese valor para {{ feature.replace('_', ' ').title() }}"
+                                                   onfocus="this.style.borderColor='#3498db'"
+                                                   onblur="this.style.borderColor='#e9ecef'">
+                                            <div class="form-text">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Valor numérico requerido para el modelo
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="row mt-5">
+                                        <div class="col-12">
+                                            <div class="d-grid gap-3 d-md-flex justify-content-md-end">
+                                                <button type="reset" class="btn btn-secondary btn-lg me-md-3">
+                                                    <i class="fas fa-undo me-2"></i>Limpiar Formulario
+                                                </button>
+                                                <button type="submit" class="btn btn-primary btn-lg" id="predictBtn">
+                                                    <i class="fas fa-magic me-2"></i>Predecir Segmento
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <!-- Quick Fill Examples -->
+                                <div class="mt-5 quick-examples">
+                                    <h6 class="fw-bold mb-3">
+                                        <i class="fas fa-bolt me-2"></i>
+                                        Ejemplos Rápidos para Probar:
+                                    </h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-outline-primary w-100 py-3" 
+                                                    onclick="fillExample('premium')">
+                                                <i class="fas fa-crown me-2"></i>
+                                                Cliente Premium
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-outline-success w-100 py-3" 
+                                                    onclick="fillExample('economico')">
+                                                <i class="fas fa-piggy-bank me-2"></i>
+                                                Cliente Económico
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-outline-info w-100 py-3" 
+                                                    onclick="fillExample('joven')">
+                                                <i class="fas fa-mobile-alt me-2"></i>
+                                                Cliente Joven
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- API Information -->
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-code me-2"></i>
+                                Integración API
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">
+                                <i class="fas fa-plug me-2"></i>
+                                También puedes integrar la predicción en tus sistemas usando nuestra API REST:
+                            </p>
+                            <div class="api-info">
+                                <code>
+                                    <span class="text-warning">POST</span> /api/predict<br>
+                                    <span class="text-info">Content-Type:</span> application/json<br>
+                                    <span class="text-info">Body:</span><br>
+                                    {<br>
+                                    &nbsp;&nbsp;<span class="text-success">"Age"</span>: <span class="text-warning">35</span>,<br>
+                                    &nbsp;&nbsp;<span class="text-success">"Annual_Income_(k$)"</span>: <span class="text-warning">60</span>,<br>
+                                    &nbsp;&nbsp;<span class="text-success">"Spending_Score"</span>: <span class="text-warning">75</span>,<br>
+                                    &nbsp;&nbsp;<span class="text-success">"Years_with_Company"</span>: <span class="text-warning">3</span>,<br>
+                                    &nbsp;&nbsp;<span class="text-success">"Total_Purchases"</span>: <span class="text-warning">15</span>,<br>
+                                    &nbsp;&nbsp;<span class="text-success">"Avg_Transaction_Value"</span>: <span class="text-warning">85</span><br>
+                                    }
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-pie me-2"></i>Segmentación Inteligente
+                    </h5>
+                    <p class="text-muted mb-0">
+                        Predicción avanzada de segmentos de clientes usando machine learning y algoritmos de clustering.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">
+                        &copy; 2025 Proyecto CRISP-DM. Todos los derechos reservados.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript para el Navbar y funcionalidades -->
+    <script>
+        // Script para el comportamiento del navbar
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbar = document.querySelector('.navbar');
+            
+            // Scroll behavior para navbar compacto
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled', 'compact-nav', 'small-header');
+                } else {
+                    navbar.classList.remove('scrolled', 'compact-nav', 'small-header');
+                }
+            });
+
+            // Añadir clase enhanced-title a todos los títulos de página
+            const pageTitles = document.querySelectorAll('.page-title, .display-4, .display-5');
+            pageTitles.forEach(title => {
+                title.classList.add('enhanced-title');
+            });
+
+            // Smooth scroll para enlaces internos
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Cerrar navbar móvil al hacer clic en un enlace
+            const navLinks = document.querySelectorAll('.nav-link');
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navbarCollapse.classList.contains('show')) {
+                        navbarToggler.click();
+                    }
+                });
+            });
+
+            console.log('Página de predicción optimizada cargada correctamente');
+        });
+
+        // Example data for quick fill
+        const examples = {
+            'premium': {
+                'Age': 45,
+                'Annual_Income_(k$)': 85,
+                'Spending_Score': 75,
+                'Years_with_Company': 5,
+                'Total_Purchases': 25,
+                'Avg_Transaction_Value': 120
+            },
+            'economico': {
+                'Age': 38,
+                'Annual_Income_(k$)': 35,
+                'Spending_Score': 25,
+                'Years_with_Company': 2,
+                'Total_Purchases': 8,
+                'Avg_Transaction_Value': 45
+            },
+            'joven': {
+                'Age': 25,
+                'Annual_Income_(k$)': 45,
+                'Spending_Score': 65,
+                'Years_with_Company': 1,
+                'Total_Purchases': 12,
+                'Avg_Transaction_Value': 75
+            }
+        };
+
+        function fillExample(type) {
+            const example = examples[type];
+            for (const [key, value] of Object.entries(example)) {
+                const input = document.getElementById(key);
+                if (input) {
+                    input.value = value;
+                    // Add visual feedback
+                    input.style.borderColor = '#27ae60';
+                    input.style.boxShadow = '0 0 0 0.2rem rgba(39, 174, 96, 0.25)';
+                    setTimeout(() => {
+                        input.style.borderColor = '#e9ecef';
+                        input.style.boxShadow = 'none';
+                    }, 2000);
+                }
+            }
+            
+            // Show success message
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed';
+            toast.style.bottom = '20px';
+            toast.style.right = '20px';
+            toast.style.zIndex = '1000';
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Ejemplo ${type} cargado correctamente
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            new bootstrap.Toast(toast).show();
+        }
+
+        // Form validation and submission
+        document.getElementById('predictionForm')?.addEventListener('submit', function(e) {
+            const inputs = this.querySelectorAll('input[type="number"]');
+            let isValid = true;
+            const predictBtn = document.getElementById('predictBtn');
+
+            inputs.forEach(input => {
+                if (!input.value) {
+                    isValid = false;
+                    input.classList.add('is-invalid');
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                // Show error message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Error:</strong> Por favor, complete todos los campos requeridos.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                this.prepend(alert);
+            } else {
+                // Show loading state
+                predictBtn.innerHTML = '<div class="loading"></div>Procesando...';
+                predictBtn.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>

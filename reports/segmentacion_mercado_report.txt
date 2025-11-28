@@ -1,0 +1,47 @@
+
+📊 REPORTE DE SEGMENTACIÓN DE MERCADO
+📅 Generado: 2025-11-28 00:55:19
+🔢 Dataset: customer_segmentation_data.csv
+============================================
+
+📈 RESUMEN EJECUTIVO:
+• Total de clientes analizados: 53,503
+• Variables utilizadas: 7
+• Segmentos identificados: 2
+• Calidad de segmentación (Silhouette): 0.131 (Sin estructura significativa ❌)
+
+🎯 SEGMENTOS IDENTIFICADOS:
+
+Masivo - Clientes Premium (Cluster 0):
+   • Tamaño: 31160 clientes (58.2%)
+   • Características: Segmento balanceado
+
+Masivo - Clientes Económicos (Cluster 1):
+   • Tamaño: 22343 clientes (41.8%)
+   • Características: Segmento balanceado
+
+🔧 DETALLES TÉCNICOS:
+• Método: K-Means con preprocesamiento StandardScaler + PCA
+• Componentes PCA: 6
+• Varianza explicada por PCA: 86.1%
+• Métricas de evaluación:
+   - Silhouette Score: 0.131
+   - Calinski-Harabasz: 7826.688
+   - Davies-Bouldin: 2.516
+
+📋 VARIABLES MÁS IMPORTANTES:
+   1. Premium Amount (importancia: 0.657)
+   2. Purchase History_Encoded (importancia: 0.004)
+   3. Coverage Amount (importancia: 0.003)
+   4. Income Level (importancia: 0.000)
+   5. Age (importancia: 0.000)
+
+🎯 RECOMENDACIONES DE MARKETING:
+
+Masivo - Clientes Premium:
+   • Estrategia: Productos de alta gama, atención personalizada, programas exclusivos
+   • Tamaño del mercado: 58.2% de la base de clientes
+
+Masivo - Clientes Económicos:
+   • Estrategia: Precios competitivos, promociones, valor por dinero
+   • Tamaño del mercado: 41.8% de la base de clientes

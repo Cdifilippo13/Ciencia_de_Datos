@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segmentación Inteligente de Clientes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        /* Ajustes específicos para la página de inicio */
+        body {
+            padding-top: 60px; /* Compensa navbar fijo */
+        }
+        
+        .hero-section {
+            padding: 2rem 0; /* Menos padding para compensar navbar compacto */
+        }
+        
+        .min-vh-100 {
+            min-height: calc(100vh - 60px); /* Ajusta altura mínima considerando navbar */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chart-pie me-2"></i>
+                Segmentación Inteligente
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/predict">Predecir</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analysis">Análisis</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <h1 class="display-3 fw-bold mb-4">
+                        SEGMENTACIÓN INTELIGENTE DE CLIENTES
+                    </h1>
+                    <p class="lead mb-5 fs-4">
+                        Usa <span class="highlight fw-bold">machine learning para identificar</span> 
+                        segmentos de mercado y optimizar tus estrategias
+                    </p>
+                    <div class="d-flex flex-column flex-md-row gap-3">
+                        <a href="/dashboard" class="btn btn-primary btn-lg">
+                            <i class="fas fa-dashboard me-2"></i>Ver Dashboard
+                        </a>
+                        <a href="/predict" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-magic me-2"></i>Predecir Segmento
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="https://cdn.pixabay.com/photo/2018/05/08/08/44/artificial-intelligence-3382507_1280.jpg" 
+                         alt="Inteligencia Artificial y Analytics" class="hero-image img-fluid">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="display-5 fw-bold mb-3">Características Principales</h2>
+                    <p class="lead text-muted">Todo lo que necesitas para una segmentación de clientes efectiva</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-bar text-white"></i>
+                            </div>
+                            <h5 class="card-title">Dashboard Interactivo</h5>
+                            <p class="card-text">
+                                Visualiza tus segmentos de clientes con gráficos interactivos 
+                                y análisis detallados en tiempo real.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-brain text-white"></i>
+                            </div>
+                            <h5 class="card-title">Machine Learning Avanzado</h5>
+                            <p class="card-text">
+                                Algoritmos de clustering avanzados para identificar 
+                                patrones y segmentos en tus datos de clientes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-bullseye text-white"></i>
+                            </div>
+                            <h5 class="card-title">Predicción en Tiempo Real</h5>
+                            <p class="card-text">
+                                Clasifica nuevos clientes instantáneamente 
+                                en los segmentos identificados por el modelo.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 col-6">
+                    <h3 class="counter" id="totalClients">0</h3>
+                    <p>Clientes Analizados</p>
+                </div>
+                <div class="col-md-3 col-6">
+                    <h3 class="counter" id="totalSegments">0</h3>
+                    <p>Segmentos Identificados</p>
+                </div>
+                <div class="col-md-3 col-6">
+                    <h3 class="counter" id="accuracy">0%</h3>
+                    <p>Precisión del Modelo</p>
+                </div>
+                <div class="col-md-3 col-6">
+                    <h3 class="counter" id="predictions">0</h3>
+                    <p>Predicciones Realizadas</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-pie me-2"></i>Segmentación Inteligente
+                    </h5>
+                    <p class="text-muted mb-0">
+                        Herramienta avanzada de análisis para identificar segmentos 
+                        de clientes usando machine learning y algoritmos de clustering.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">
+                        &copy; 2024 Proyecto CRISP-DM. Todos los derechos reservados.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript para el Navbar y funcionalidades -->
+    <script>
+        // Script para el comportamiento del navbar
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbar = document.querySelector('.navbar');
+            
+            // Scroll behavior para navbar compacto
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled', 'compact-nav', 'small-header');
+                } else {
+                    navbar.classList.remove('scrolled', 'compact-nav', 'small-header');
+                }
+            });
+
+            // Añadir clase enhanced-title a todos los títulos de página
+            const pageTitles = document.querySelectorAll('.page-title, .display-4, .display-5');
+            pageTitles.forEach(title => {
+                title.classList.add('enhanced-title');
+            });
+
+            // Smooth scroll para enlaces internos
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Cerrar navbar móvil al hacer clic en un enlace
+            const navLinks = document.querySelectorAll('.nav-link');
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navbarCollapse.classList.contains('show')) {
+                        navbarToggler.click();
+                    }
+                });
+            });
+
+            // Animación de contadores
+            function animateCounter(elementId, finalValue, suffix = '') {
+                const element = document.getElementById(elementId);
+                let currentValue = 0;
+                const increment = finalValue / 50;
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= finalValue) {
+                        currentValue = finalValue;
+                        clearInterval(timer);
+                    }
+                    element.textContent = Math.floor(currentValue) + suffix;
+                }, 30);
+            }
+
+            // Iniciar animaciones cuando la página carga
+            setTimeout(() => {
+                animateCounter('totalClients', 12500);
+                animateCounter('totalSegments', 5);
+                animateCounter('accuracy', 94, '%');
+                animateCounter('predictions', 3420);
+            }, 500);
+
+            console.log('Página de inicio optimizada cargada correctamente');
+        });
+    </script>
+</body>
+</html>

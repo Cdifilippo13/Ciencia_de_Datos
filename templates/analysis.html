@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis - Segmentación Inteligente</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        /* Ajustes específicos para posicionar contenido debajo del navbar */
+        body {
+            padding-top: 60px; /* Altura del navbar fijo */
+        }
+        
+        .navbar {
+            min-height: 60px;
+        }
+        
+        .main-content {
+            margin-top: 0;
+            padding-top: 0;
+        }
+        
+        /* Asegurar que el contenido no quede oculto detrás del navbar */
+        .container {
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chart-pie me-2"></i>
+                Segmentación Inteligente
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/predict">Predecir</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/analysis">Análisis</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content - Comienza justo debajo del navbar -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Header Section Compacta -->
+            <div class="page-header text-center mb-4">
+                <h1 class="page-title analysis-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Análisis Detallado de Segmentos
+                </h1>
+                <p class="page-subtitle">
+                    Descubre insights valiosos sobre tus segmentos de clientes y optimiza tus estrategias
+                </p>
+            </div>
+
+            <!-- Statistics Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-table me-2"></i>
+                                Estadísticas por Segmento
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                {{ stats_html | safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Analysis Cards -->
+            <div class="row mt-4">
+                {% for cluster_num, cluster_name in cluster_names.items() %}
+                {% set segment_data = df_clustered[df_clustered['Cluster'] == cluster_num] %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card card-cluster shadow-sm h-100">
+                        <div class="card-header 
+                            {% if 'Premium' in cluster_name %}bg-warning text-dark
+                            {% elif 'Económicos' in cluster_name %}bg-success text-white
+                            {% elif 'Jóvenes' in cluster_name %}bg-info text-white
+                            {% elif 'Senior' in cluster_name %}bg-secondary text-white
+                            {% else %}bg-primary text-white{% endif %}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-users me-2"></i>
+                                    {{ cluster_name }}
+                                </h5>
+                                <span class="badge 
+                                    {% if 'Premium' in cluster_name %}badge-premium
+                                    {% elif 'Económicos' in cluster_name %}badge-economic
+                                    {% elif 'Jóvenes' in cluster_name %}badge-young
+                                    {% elif 'Senior' in cluster_name %}badge-senior
+                                    {% else %}bg-primary{% endif %}">
+                                    {{ "%.1f"|format((segment_data|length / df_clustered|length) * 100) }}%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Basic Info -->
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-value">{{ segment_data|length }}</div>
+                                    <div class="metric-label">Clientes</div>
+                                </div>
+                                {% if 'Age' in segment_data.columns %}
+                                <div class="metric-card">
+                                    <div class="metric-value">{{ "%.1f"|format(segment_data['Age'].mean()) }}</div>
+                                    <div class="metric-label">Edad Prom.</div>
+                                </div>
+                                {% endif %}
+                                {% if 'Income Level' in segment_data.columns %}
+                                <div class="metric-card">
+                                    <div class="metric-value">${{ "%.1f"|format(segment_data['Income Level'].mean()) }}</div>
+                                    <div class="metric-label">Ingreso Prom.</div>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Characteristics -->
+                            <h6 class="fw-bold mt-4 mb-3">
+                                <i class="fas fa-star me-2"></i>Características Principales
+                            </h6>
+                            <ul class="list-unstyled">
+                                {% if 'Age' in df_clustered.columns %}
+                                    {% if segment_data['Age'].mean() > df_clustered['Age'].mean() %}
+                                    <li><i class="fas fa-arrow-up text-success me-2"></i>Más adultos que el promedio</li>
+                                    {% else %}
+                                    <li><i class="fas fa-arrow-down text-info me-2"></i>Más jóvenes que el promedio</li>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                {% if 'Income Level' in df_clustered.columns %}
+                                    {% if segment_data['Income Level'].mean() > df_clustered['Income Level'].mean() %}
+                                    <li><i class="fas fa-arrow-up text-success me-2"></i>Mayor poder adquisitivo</li>
+                                    {% else %}
+                                    <li><i class="fas fa-arrow-down text-warning me-2"></i>Menor poder adquisitivo</li>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                {% if 'Premium Amount' in df_clustered.columns %}
+                                    {% if segment_data['Premium Amount'].mean() > df_clustered['Premium Amount'].mean() %}
+                                    <li><i class="fas fa-arrow-up text-success me-2"></i>Mayor prima de seguro</li>
+                                    {% else %}
+                                    <li><i class="fas fa-arrow-down text-warning me-2"></i>Menor prima de seguro</li>
+                                    {% endif %}
+                                {% endif %}
+                            </ul>
+
+                            <!-- Recommendations -->
+                            <h6 class="fw-bold mt-4 mb-3">
+                                <i class="fas fa-bullseye me-2"></i>Estrategias Recomendadas
+                            </h6>
+                            <div class="alert 
+                                {% if 'Premium' in cluster_name %}alert-warning
+                                {% elif 'Económicos' in cluster_name %}alert-success
+                                {% elif 'Jóvenes' in cluster_name %}alert-info
+                                {% elif 'Senior' in cluster_name %}alert-secondary
+                                {% else %}alert-primary{% endif %}">
+                                {% if 'Premium' in cluster_name %}
+                                    <strong>🎯 Estrategia Premium:</strong> Productos de alta gama, atención personalizada, programas exclusivos de fidelización y servicios premium.
+                                {% elif 'Económicos' in cluster_name %}
+                                    <strong>💰 Estrategia Económica:</strong> Precios competitivos, promociones frecuentes, planes de pago flexibles y enfoque en valor por dinero.
+                                {% elif 'Jóvenes' in cluster_name %}
+                                    <strong>🚀 Estrategia Jóvenes:</strong> Marketing digital, redes sociales, productos innovadores, apps móviles y comunicación moderna.
+                                {% elif 'Senior' in cluster_name %}
+                                    <strong>👵 Estrategia Senior:</strong> Enfasis en confiabilidad, servicio al cliente presencial, facilidad de uso y atención personalizada.
+                                {% else %}
+                                    <strong>📊 Estrategia Personalizada:</strong> Desarrollar estrategias específicas basadas en el análisis detallado del segmento.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Technical Details -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-cogs me-2"></i>
+                                Detalles Técnicos del Modelo
+                            </h5>
+                        </div>
+                        <div class="card-body technical-details">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6>🤖 Algoritmo de Clustering</h6>
+                                    <p class="text-muted">K-Means Optimizado</p>
+                                    <ul class="small">
+                                        <li><strong>Clusters:</strong> {{ cluster_names|length }}</li>
+                                        <li><strong>Inicialización:</strong> K-means++</li>
+                                        <li><strong>Iteraciones:</strong> 300 máximas</li>
+                                        <li><strong>Semilla:</strong> 42 para reproducibilidad</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>🔧 Preprocesamiento</h6>
+                                    <p class="text-muted">StandardScaler + PCA</p>
+                                    <ul class="small">
+                                        <li><strong>Variables:</strong> {{ feature_names|length if feature_names else 'Todas relevantes' }}</li>
+                                        <li><strong>Componentes PCA:</strong> 2 principales</li>
+                                        <li><strong>Escalado:</strong> Estandarización (Z-score)</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>📈 Métricas de Calidad</h6>
+                                    <p class="text-muted">Evaluación del Modelo</p>
+                                    <ul class="small">
+                                        <li><strong>Método:</strong> Silhouette Score</li>
+                                        <li><strong>Estabilidad:</strong> Alta consistencia</li>
+                                        <li><strong>Interpretabilidad:</strong> Excelente</li>
+                                        <li><strong>Rendimiento:</strong> Optimizado</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Section -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-download me-2"></i>
+                                Exportar Resultados
+                            </h5>
+                        </div>
+                        <div class="card-body export-section">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <a href="/download/report" class="btn btn-outline-primary">
+                                        <i class="fas fa-file-text fa-2x mb-2"></i>
+                                        <br>
+                                        Reporte Ejecutivo
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="/data/processed/customers_with_clusters.csv" 
+                                       class="btn btn-outline-success" 
+                                       download>
+                                        <i class="fas fa-table fa-2x mb-2"></i>
+                                        <br>
+                                        Datos con Clusters
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <button onclick="window.print()" class="btn btn-outline-info">
+                                        <i class="fas fa-print fa-2x mb-2"></i>
+                                        <br>
+                                        Imprimir Análisis
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Section -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                Insights y Recomendaciones Generales
+                            </h5>
+                        </div>
+                        <div class="card-body insights-section">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>🎯 Oportunidades de Mercado Identificadas</h6>
+                                    <ul>
+                                        <li>Segmento más grande para estrategias masivas efectivas</li>
+                                        <li>Segmentos premium para maximizar valor por cliente</li>
+                                        <li>Nichos específicos para productos especializados</li>
+                                        <li>Oportunidades de cross-selling entre segmentos</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>📊 Próximos Pasos Recomendados</h6>
+                                    <ul>
+                                        <li>Validación de segmentos con equipos comerciales</li>
+                                        <li>Desarrollo de personas de cliente detalladas</li>
+                                        <li>Campañas de marketing hiper-personalizadas</li>
+                                        <li>Seguimiento continuo de la evolución de segmentos</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-pie me-2"></i>Segmentación Inteligente
+                    </h5>
+                    <p class="text-muted mb-0">
+                        Análisis avanzado de segmentos de clientes usando machine learning y algoritmos de clustering.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">
+                        &copy; 2025 Proyecto CRISP-DM. Todos los derechos reservados.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript para el Navbar y funcionalidades -->
+    <script>
+        // Script para el comportamiento del navbar
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbar = document.querySelector('.navbar');
+            
+            // Scroll behavior para navbar compacto
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled', 'compact-nav', 'small-header');
+                } else {
+                    navbar.classList.remove('scrolled', 'compact-nav', 'small-header');
+                }
+            });
+
+            // Añadir clase enhanced-title a todos los títulos de página
+            const pageTitles = document.querySelectorAll('.page-title, .display-4, .display-5');
+            pageTitles.forEach(title => {
+                title.classList.add('enhanced-title');
+            });
+
+            // Smooth scroll para enlaces internos
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Cerrar navbar móvil al hacer clic en un enlace
+            const navLinks = document.querySelectorAll('.nav-link');
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navbarCollapse.classList.contains('show')) {
+                        navbarToggler.click();
+                    }
+                });
+            });
+
+            // Add loading animation to metric cards
+            const metricCards = document.querySelectorAll('.metric-card');
+            metricCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            console.log('Página de análisis optimizada cargada correctamente');
+        });
+
+        // Print enhancement
+        function enhancePrintExperience() {
+            const style = document.createElement('style');
+            style.textContent = `
+                @media print {
+                    .navbar { display: none !important; }
+                    footer { display: none !important; }
+                    .btn { display: none !important; }
+                    .card { break-inside: avoid; box-shadow: none !important; border: 1px solid #dee2e6 !important; }
+                    .card:hover { transform: none !important; }
+                    .metric-card { background: #f8f9fa !important; color: #000 !important; }
+                    .page-header { background: white !important; box-shadow: none !important; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        enhancePrintExperience();
+    </script>
+</body>
+</html>
