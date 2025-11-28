@@ -37,5 +37,6 @@ Esta aplicación permite:
 
 ### 1. Clonar o descargar el proyecto
 ```bash
-git clone <repository-url>
+git clone <https://github.com/Cdifilippo13/Ciencia_de_Datos.git>
+
 cd segmentacion_mercado
